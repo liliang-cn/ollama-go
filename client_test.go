@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
+	"time"
 )
 
 func TestNewClient(t *testing.T) {
@@ -244,5 +246,532 @@ func TestUtilityFunctions(t *testing.T) {
 	s := StringPtr("test")
 	if s == nil || *s != "test" {
 		t.Error("StringPtr failed")
+	}
+}
+
+func TestGenerateStream(t *testing.T) {
+	// Mock server that returns streaming responses
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/api/generate" {
+			t.Errorf("Expected path /api/generate, got %s", r.URL.Path)
+		}
+		if r.Method != "POST" {
+			t.Errorf("Expected POST method, got %s", r.Method)
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		
+		// Simulate streaming responses
+		responses := []GenerateResponse{
+			{Model: "test-model", Response: "Hello", Done: false},
+			{Model: "test-model", Response: " world", Done: false},
+			{Model: "test-model", Response: "!", Done: true},
+		}
+		
+		for _, resp := range responses {
+			json.NewEncoder(w).Encode(resp)
+			if f, ok := w.(http.Flusher); ok {
+				f.Flush()
+			}
+		}
+	}))
+	defer server.Close()
+
+	client, _ := NewClient(WithHost(server.URL))
+	
+	req := &GenerateRequest{
+		Model:  "test-model",
+		Prompt: "Test prompt",
+		Stream: BoolPtr(true),
+	}
+
+	respCh, errCh := client.GenerateStream(context.Background(), req)
+
+	// Collect responses
+	var responses []*GenerateResponse
+	for {
+		select {
+		case resp, ok := <-respCh:
+			if !ok {
+				goto done
+			}
+			responses = append(responses, resp)
+		case err := <-errCh:
+			if err != nil {
+				t.Fatalf("GenerateStream failed: %v", err)
+			}
+		case <-time.After(5 * time.Second):
+			t.Fatal("Timeout waiting for stream responses")
+		}
+	}
+	done:
+
+	if len(responses) == 0 {
+		t.Fatal("Expected streaming responses, got none")
+	}
+
+	// Check that we got the expected responses
+	expected := []string{"Hello", " world", "!"}
+	if len(responses) != len(expected) {
+		t.Errorf("Expected %d responses, got %d", len(expected), len(responses))
+	}
+
+	for i, resp := range responses {
+		if i < len(expected) && resp.Response != expected[i] {
+			t.Errorf("Response %d: expected '%s', got '%s'", i, expected[i], resp.Response)
+		}
+		if i == len(responses)-1 && !resp.Done {
+			t.Error("Last response should have Done=true")
+		}
+	}
+}
+
+func TestChatStream(t *testing.T) {
+	// Mock server that returns streaming chat responses
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/api/chat" {
+			t.Errorf("Expected path /api/chat, got %s", r.URL.Path)
+		}
+		if r.Method != "POST" {
+			t.Errorf("Expected POST method, got %s", r.Method)
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		
+		responses := []ChatResponse{
+			{
+				Model: "test-model",
+				Message: Message{Role: "assistant", Content: "Hi"},
+				Done:  false,
+			},
+			{
+				Model: "test-model",
+				Message: Message{Role: "assistant", Content: " there!"},
+				Done:  true,
+			},
+		}
+		
+		for _, resp := range responses {
+			json.NewEncoder(w).Encode(resp)
+			if f, ok := w.(http.Flusher); ok {
+				f.Flush()
+			}
+		}
+	}))
+	defer server.Close()
+
+	client, _ := NewClient(WithHost(server.URL))
+	
+	req := &ChatRequest{
+		Model: "test-model",
+		Messages: []Message{
+			{Role: "user", Content: "Hello"},
+		},
+		Stream: BoolPtr(true),
+	}
+
+	respCh, errCh := client.ChatStream(context.Background(), req)
+
+	var responses []*ChatResponse
+	for {
+		select {
+		case resp, ok := <-respCh:
+			if !ok {
+				goto done
+			}
+			responses = append(responses, resp)
+		case err := <-errCh:
+			if err != nil {
+				t.Fatalf("ChatStream failed: %v", err)
+			}
+		case <-time.After(5 * time.Second):
+			t.Fatal("Timeout waiting for chat stream responses")
+		}
+	}
+	done:
+
+	if len(responses) != 2 {
+		t.Errorf("Expected 2 responses, got %d", len(responses))
+	}
+
+	if len(responses) > 0 && responses[0].Message.Content != "Hi" {
+		t.Errorf("First response: expected 'Hi', got '%s'", responses[0].Message.Content)
+	}
+
+	if len(responses) > 1 && !responses[1].Done {
+		t.Error("Last response should have Done=true")
+	}
+}
+
+func TestShow(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/api/show" {
+			t.Errorf("Expected path /api/show, got %s", r.URL.Path)
+		}
+		if r.Method != "POST" {
+			t.Errorf("Expected POST method, got %s", r.Method)
+		}
+
+		response := ShowResponse{
+			Modelfile:  "FROM llama2",
+			Parameters: "temperature 0.8",
+			Template:   "{{ .Prompt }}",
+			Details: &ModelDetails{
+				Format:         "gguf",
+				Family:         "llama",
+				ParameterSize:  "7B",
+				QuantizationLevel: "Q4_0",
+			},
+		}
+		json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	client, _ := NewClient(WithHost(server.URL))
+	
+	req := &ShowRequest{
+		Model: "test-model",
+	}
+
+	resp, err := client.Show(context.Background(), req)
+	if err != nil {
+		t.Fatalf("Show failed: %v", err)
+	}
+
+	if resp.Details != nil && resp.Details.Family != "llama" {
+		t.Errorf("Expected family 'llama', got '%s'", resp.Details.Family)
+	}
+}
+
+func TestPull(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/api/pull" {
+			t.Errorf("Expected path /api/pull, got %s", r.URL.Path)
+		}
+		if r.Method != "POST" {
+			t.Errorf("Expected POST method, got %s", r.Method)
+		}
+
+		response := StatusResponse{
+			Status: "success",
+		}
+		json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	client, _ := NewClient(WithHost(server.URL))
+	
+	req := &PullRequest{
+		Model: "test-model",
+	}
+
+	resp, err := client.Pull(context.Background(), req)
+	if err != nil {
+		t.Fatalf("Pull failed: %v", err)
+	}
+
+	if resp.Status != "success" {
+		t.Errorf("Expected status 'success', got '%s'", resp.Status)
+	}
+}
+
+func TestDelete(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/api/delete" {
+			t.Errorf("Expected path /api/delete, got %s", r.URL.Path)
+		}
+		if r.Method != "DELETE" {
+			t.Errorf("Expected DELETE method, got %s", r.Method)
+		}
+		response := StatusResponse{Status: "success"}
+		json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	client, _ := NewClient(WithHost(server.URL))
+	
+	req := &DeleteRequest{
+		Model: "test-model",
+	}
+
+	resp, err := client.Delete(context.Background(), req)
+	if err != nil {
+		t.Fatalf("Delete failed: %v", err)
+	}
+
+	if resp.Status != "success" {
+		t.Errorf("Expected status 'success', got '%s'", resp.Status)
+	}
+}
+
+func TestCopy(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/api/copy" {
+			t.Errorf("Expected path /api/copy, got %s", r.URL.Path)
+		}
+		if r.Method != "POST" {
+			t.Errorf("Expected POST method, got %s", r.Method)
+		}
+		response := StatusResponse{Status: "success"}
+		json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	client, _ := NewClient(WithHost(server.URL))
+	
+	req := &CopyRequest{
+		Source:      "source-model",
+		Destination: "dest-model",
+	}
+
+	resp, err := client.Copy(context.Background(), req)
+	if err != nil {
+		t.Fatalf("Copy failed: %v", err)
+	}
+
+	if resp.Status != "success" {
+		t.Errorf("Expected status 'success', got '%s'", resp.Status)
+	}
+}
+
+func TestPs(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/api/ps" {
+			t.Errorf("Expected path /api/ps, got %s", r.URL.Path)
+		}
+		if r.Method != "GET" {
+			t.Errorf("Expected GET method, got %s", r.Method)
+		}
+
+		response := ProcessResponse{
+			Models: []ProcessModel{
+				{
+					Model:     "model1",
+					Size:      1024,
+					Digest:    "sha256:abc123",
+					ExpiresAt: &[]time.Time{time.Now().Add(time.Hour)}[0],
+				},
+			},
+		}
+		json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	client, _ := NewClient(WithHost(server.URL))
+
+	resp, err := client.Ps(context.Background())
+	if err != nil {
+		t.Fatalf("Ps failed: %v", err)
+	}
+
+	if len(resp.Models) != 1 {
+		t.Errorf("Expected 1 running model, got %d", len(resp.Models))
+	}
+
+	if resp.Models[0].Model != "model1" {
+		t.Errorf("Expected model 'model1', got '%s'", resp.Models[0].Model)
+	}
+}
+
+func TestVersion(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/api/version" {
+			t.Errorf("Expected path /api/version, got %s", r.URL.Path)
+		}
+		if r.Method != "GET" {
+			t.Errorf("Expected GET method, got %s", r.Method)
+		}
+
+		response := VersionResponse{
+			Version: "0.1.0",
+		}
+		json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	client, _ := NewClient(WithHost(server.URL))
+
+	resp, err := client.Version(context.Background())
+	if err != nil {
+		t.Fatalf("Version failed: %v", err)
+	}
+
+	if resp.Version != "0.1.0" {
+		t.Errorf("Expected version '0.1.0', got '%s'", resp.Version)
+	}
+}
+
+func TestEmbeddings(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/api/embed" {
+			t.Errorf("Expected path /api/embed, got %s", r.URL.Path)
+		}
+
+		response := EmbeddingsResponse{
+			Embedding: []float64{0.1, 0.2, 0.3},
+		}
+		json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	client, _ := NewClient(WithHost(server.URL))
+
+	resp, err := client.Embeddings(context.Background(), &EmbeddingsRequest{
+		Model: "test-embed-model",
+		Prompt: "text1",
+	})
+	if err != nil {
+		t.Fatalf("Embeddings failed: %v", err)
+	}
+
+	if len(resp.Embedding) != 3 {
+		t.Errorf("Expected 3 embedding dimensions, got %d", len(resp.Embedding))
+	}
+}
+
+func TestWithHTTPClient(t *testing.T) {
+	customClient := &http.Client{
+		Timeout: 30 * time.Second,
+	}
+
+	client, err := NewClient(WithHTTPClient(customClient))
+	if err != nil {
+		t.Fatalf("Failed to create client with custom HTTP client: %v", err)
+	}
+
+	if client.httpClient.Timeout != 30*time.Second {
+		t.Errorf("Expected timeout 30s, got %v", client.httpClient.Timeout)
+	}
+}
+
+func TestWithHeaders(t *testing.T) {
+	headers := map[string]string{
+		"Authorization": "Bearer token123",
+		"Custom-Header": "custom-value",
+	}
+
+	client, err := NewClient(WithHeaders(headers))
+	if err != nil {
+		t.Fatalf("Failed to create client with headers: %v", err)
+	}
+
+	if client.headers["Authorization"] != "Bearer token123" {
+		t.Errorf("Expected Authorization header, got %s", client.headers["Authorization"])
+	}
+
+	if client.headers["Custom-Header"] != "custom-value" {
+		t.Errorf("Expected Custom-Header, got %s", client.headers["Custom-Header"])
+	}
+}
+
+func TestErrorHandling(t *testing.T) {
+	// Test invalid URL
+	_, err := NewClient(WithHost("invalid-url"))
+	if err == nil {
+		t.Error("Expected error for invalid URL, got nil")
+	}
+
+	// Test network error
+	client, _ := NewClient(WithHost("http://non-existent-host:12345"))
+	
+	req := &GenerateRequest{
+		Model:  "test-model",
+		Prompt: "Test prompt",
+	}
+
+	_, err = client.Generate(context.Background(), req)
+	if err == nil {
+		t.Error("Expected network error, got nil")
+	}
+}
+
+func TestRequestCancellation(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Simulate slow response
+		time.Sleep(2 * time.Second)
+		json.NewEncoder(w).Encode(GenerateResponse{Response: "slow response"})
+	}))
+	defer server.Close()
+
+	client, _ := NewClient(WithHost(server.URL))
+	
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer cancel()
+
+	req := &GenerateRequest{
+		Model:  "test-model",
+		Prompt: "Test prompt",
+	}
+
+	_, err := client.Generate(ctx, req)
+	if err == nil {
+		t.Error("Expected timeout error, got nil")
+	}
+
+	if !strings.Contains(err.Error(), "context deadline exceeded") {
+		t.Errorf("Expected context deadline exceeded error, got: %v", err)
+	}
+}
+
+func TestJSONErrorResponse(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(`{"error":"invalid model name"}`))
+	}))
+	defer server.Close()
+
+	client, _ := NewClient(WithHost(server.URL))
+	
+	req := &GenerateRequest{
+		Model:  "invalid-model",
+		Prompt: "Test prompt",
+	}
+
+	_, err := client.Generate(context.Background(), req)
+	if err == nil {
+		t.Fatal("Expected error, got nil")
+	}
+
+	if respErr, ok := err.(*ResponseError); ok {
+		if respErr.StatusCode != 400 {
+			t.Errorf("Expected status code 400, got %d", respErr.StatusCode)
+		}
+		if respErr.Message != "invalid model name" {
+			t.Errorf("Expected 'invalid model name', got '%s'", respErr.Message)
+		}
+	} else {
+		t.Errorf("Expected ResponseError, got %T", err)
+	}
+}
+
+func TestNonJSONErrorResponse(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Internal Server Error"))
+	}))
+	defer server.Close()
+
+	client, _ := NewClient(WithHost(server.URL))
+	
+	req := &GenerateRequest{
+		Model:  "test-model",
+		Prompt: "Test prompt",
+	}
+
+	_, err := client.Generate(context.Background(), req)
+	if err == nil {
+		t.Fatal("Expected error, got nil")
+	}
+
+	if respErr, ok := err.(*ResponseError); ok {
+		if respErr.StatusCode != 500 {
+			t.Errorf("Expected status code 500, got %d", respErr.StatusCode)
+		}
+		if respErr.Message != "Internal Server Error" {
+			t.Errorf("Expected 'Internal Server Error', got '%s'", respErr.Message)
+		}
+	} else {
+		t.Errorf("Expected ResponseError, got %T", err)
 	}
 }
