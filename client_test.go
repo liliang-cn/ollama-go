@@ -52,7 +52,7 @@ func TestGenerate(t *testing.T) {
 			Response: "Test response",
 			Done:     true,
 		}
-		json.NewEncoder(w).Encode(response)
+		_ = json.NewEncoder(w).Encode(response)
 	}))
 	defer server.Close()
 
@@ -91,7 +91,7 @@ func TestChat(t *testing.T) {
 			},
 			Done: true,
 		}
-		json.NewEncoder(w).Encode(response)
+		_ = json.NewEncoder(w).Encode(response)
 	}))
 	defer server.Close()
 
@@ -130,7 +130,7 @@ func TestList(t *testing.T) {
 				{Model: "model2", Size: 2048},
 			},
 		}
-		json.NewEncoder(w).Encode(response)
+		_ = json.NewEncoder(w).Encode(response)
 	}))
 	defer server.Close()
 
@@ -166,7 +166,7 @@ func TestEmbed(t *testing.T) {
 				{0.1, 0.2, 0.3, 0.4, 0.5},
 			},
 		}
-		json.NewEncoder(w).Encode(response)
+		_ = json.NewEncoder(w).Encode(response)
 	}))
 	defer server.Close()
 
@@ -195,7 +195,7 @@ func TestResponseError(t *testing.T) {
 	// Mock server that returns an error
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(ErrorResponse{Error: "Test error message"})
+		_ = json.NewEncoder(w).Encode(ErrorResponse{Error: "Test error message"})
 	}))
 	defer server.Close()
 
@@ -269,7 +269,7 @@ func TestGenerateStream(t *testing.T) {
 		}
 		
 		for _, resp := range responses {
-			json.NewEncoder(w).Encode(resp)
+			_ = json.NewEncoder(w).Encode(resp)
 			if f, ok := w.(http.Flusher); ok {
 				f.Flush()
 			}
@@ -346,7 +346,7 @@ func TestChatStream(t *testing.T) {
 		}
 		
 		for _, resp := range responses {
-			json.NewEncoder(w).Encode(resp)
+			_ = json.NewEncoder(w).Encode(resp)
 			if f, ok := w.(http.Flusher); ok {
 				f.Flush()
 			}
@@ -417,7 +417,7 @@ func TestShow(t *testing.T) {
 				QuantizationLevel: "Q4_0",
 			},
 		}
-		json.NewEncoder(w).Encode(response)
+		_ = json.NewEncoder(w).Encode(response)
 	}))
 	defer server.Close()
 
@@ -449,7 +449,7 @@ func TestPull(t *testing.T) {
 		response := StatusResponse{
 			Status: "success",
 		}
-		json.NewEncoder(w).Encode(response)
+		_ = json.NewEncoder(w).Encode(response)
 	}))
 	defer server.Close()
 
@@ -478,7 +478,7 @@ func TestDelete(t *testing.T) {
 			t.Errorf("Expected DELETE method, got %s", r.Method)
 		}
 		response := StatusResponse{Status: "success"}
-		json.NewEncoder(w).Encode(response)
+		_ = json.NewEncoder(w).Encode(response)
 	}))
 	defer server.Close()
 
@@ -507,7 +507,7 @@ func TestCopy(t *testing.T) {
 			t.Errorf("Expected POST method, got %s", r.Method)
 		}
 		response := StatusResponse{Status: "success"}
-		json.NewEncoder(w).Encode(response)
+		_ = json.NewEncoder(w).Encode(response)
 	}))
 	defer server.Close()
 
@@ -547,7 +547,7 @@ func TestPs(t *testing.T) {
 				},
 			},
 		}
-		json.NewEncoder(w).Encode(response)
+		_ = json.NewEncoder(w).Encode(response)
 	}))
 	defer server.Close()
 
@@ -579,7 +579,7 @@ func TestVersion(t *testing.T) {
 		response := VersionResponse{
 			Version: "0.1.0",
 		}
-		json.NewEncoder(w).Encode(response)
+		_ = json.NewEncoder(w).Encode(response)
 	}))
 	defer server.Close()
 
@@ -604,7 +604,7 @@ func TestEmbeddings(t *testing.T) {
 		response := EmbeddingsResponse{
 			Embedding: []float64{0.1, 0.2, 0.3},
 		}
-		json.NewEncoder(w).Encode(response)
+		_ = json.NewEncoder(w).Encode(response)
 	}))
 	defer server.Close()
 
@@ -685,7 +685,7 @@ func TestRequestCancellation(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Simulate slow response
 		time.Sleep(2 * time.Second)
-		json.NewEncoder(w).Encode(GenerateResponse{Response: "slow response"})
+		_ = json.NewEncoder(w).Encode(GenerateResponse{Response: "slow response"})
 	}))
 	defer server.Close()
 
@@ -713,7 +713,7 @@ func TestJSONErrorResponse(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(`{"error":"invalid model name"}`))
+		_, _ = w.Write([]byte(`{"error":"invalid model name"}`))
 	}))
 	defer server.Close()
 
@@ -744,7 +744,7 @@ func TestJSONErrorResponse(t *testing.T) {
 func TestNonJSONErrorResponse(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("Internal Server Error"))
+		_, _ = w.Write([]byte("Internal Server Error"))
 	}))
 	defer server.Close()
 

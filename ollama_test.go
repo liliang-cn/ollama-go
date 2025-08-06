@@ -16,7 +16,7 @@ func TestGlobalGenerate(t *testing.T) {
 			Response: "Test response",
 			Done:     true,
 		}
-		json.NewEncoder(w).Encode(response)
+		_ = json.NewEncoder(w).Encode(response)
 	}))
 	defer server.Close()
 
@@ -43,7 +43,7 @@ func TestGlobalChat(t *testing.T) {
 			},
 			Done: true,
 		}
-		json.NewEncoder(w).Encode(response)
+		_ = json.NewEncoder(w).Encode(response)
 	}))
 	defer server.Close()
 
@@ -70,7 +70,7 @@ func TestGlobalList(t *testing.T) {
 				{Model: "model1", Size: 1024},
 			},
 		}
-		json.NewEncoder(w).Encode(response)
+		_ = json.NewEncoder(w).Encode(response)
 	}))
 	defer server.Close()
 
