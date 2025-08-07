@@ -1,5 +1,7 @@
 # Ollama Go Client
 
+[中文文档](README_zh.md) | English
+
 A Go client library for [Ollama](https://ollama.ai/), based on the official Python client.
 
 > **Note**: This is an unofficial Go client library inspired by the official Python client. It provides the same functionality and API design patterns with **98%+ feature parity**.
