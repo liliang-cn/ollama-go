@@ -254,7 +254,6 @@ func main() {
     fmt.Printf("File uploaded with digest: %s\n", digest)
 }
 ```
-```
 
 ### Progress Streaming
 
