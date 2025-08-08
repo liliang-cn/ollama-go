@@ -13,13 +13,13 @@ func main() {
 
 	messages := []ollama.Message{
 		{
-			Role:    "user", 
+			Role:    "user",
 			Content: "Tell me about Go programming language",
 		},
 	}
 
 	// Stream chat
-	responseChan, errorChan := ollama.ChatStream(ctx, "gemma3", messages)
+	responseChan, errorChan := ollama.ChatStream(ctx, "qwen3", messages)
 
 	for {
 		select {

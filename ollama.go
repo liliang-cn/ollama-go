@@ -13,7 +13,16 @@ func init() {
 	}
 }
 
-// Generate generates a response using the default client
+// Generate generates a response using the default client.
+// It sends a prompt to the specified model and returns the complete response.
+//
+// Example:
+//
+//	response, err := ollama.Generate(ctx, "gemma3", "Why is the sky blue?")
+//	if err != nil {
+//		log.Fatal(err)
+//	}
+//	fmt.Println(response.Response)
 func Generate(ctx context.Context, model, prompt string, options ...func(*GenerateRequest)) (*GenerateResponse, error) {
 	req := &GenerateRequest{
 		Model:  model,
@@ -27,7 +36,26 @@ func Generate(ctx context.Context, model, prompt string, options ...func(*Genera
 	return defaultClient.Generate(ctx, req)
 }
 
-// GenerateStream generates a streaming response using the default client
+// GenerateStream generates a streaming response using the default client.
+// It returns channels for receiving streaming responses and errors.
+// The response channel will be closed when the stream is complete.
+//
+// Example:
+//
+//	responseChan, errorChan := ollama.GenerateStream(ctx, "gemma3", "Tell me a story")
+//	for {
+//		select {
+//		case response, ok := <-responseChan:
+//			if !ok {
+//				return
+//			}
+//			fmt.Print(response.Response)
+//		case err := <-errorChan:
+//			if err != nil {
+//				log.Fatal(err)
+//			}
+//		}
+//	}
 func GenerateStream(ctx context.Context, model, prompt string, options ...func(*GenerateRequest)) (<-chan *GenerateResponse, <-chan error) {
 	req := &GenerateRequest{
 		Model:  model,
@@ -41,7 +69,19 @@ func GenerateStream(ctx context.Context, model, prompt string, options ...func(*
 	return defaultClient.GenerateStream(ctx, req)
 }
 
-// Chat sends a chat message using the default client
+// Chat sends a chat message using the default client.
+// It provides a conversational interface where you can maintain message history.
+//
+// Example:
+//
+//	messages := []ollama.Message{
+//		{Role: "user", Content: "Hello!"},
+//	}
+//	response, err := ollama.Chat(ctx, "gemma3", messages)
+//	if err != nil {
+//		log.Fatal(err)
+//	}
+//	fmt.Println(response.Message.Content)
 func Chat(ctx context.Context, model string, messages []Message, options ...func(*ChatRequest)) (*ChatResponse, error) {
 	req := &ChatRequest{
 		Model:    model,
@@ -55,7 +95,28 @@ func Chat(ctx context.Context, model string, messages []Message, options ...func
 	return defaultClient.Chat(ctx, req)
 }
 
-// ChatStream sends a chat message with streaming response using the default client
+// ChatStream sends a chat message with streaming response using the default client.
+// Similar to Chat but returns streaming responses for real-time interaction.
+//
+// Example:
+//
+//	messages := []ollama.Message{
+//		{Role: "user", Content: "Tell me a joke"},
+//	}
+//	responseChan, errorChan := ollama.ChatStream(ctx, "gemma3", messages)
+//	for {
+//		select {
+//		case response, ok := <-responseChan:
+//			if !ok {
+//				return
+//			}
+//			fmt.Print(response.Message.Content)
+//		case err := <-errorChan:
+//			if err != nil {
+//				log.Fatal(err)
+//			}
+//		}
+//	}
 func ChatStream(ctx context.Context, model string, messages []Message, options ...func(*ChatRequest)) (<-chan *ChatResponse, <-chan error) {
 	req := &ChatRequest{
 		Model:    model,
@@ -69,7 +130,18 @@ func ChatStream(ctx context.Context, model string, messages []Message, options .
 	return defaultClient.ChatStream(ctx, req)
 }
 
-// Embed creates embeddings using the default client
+// Embed creates embeddings using the default client.
+// It converts text into numerical vectors that can be used for semantic similarity.
+//
+// The input parameter can be a string or []string for multiple inputs.
+//
+// Example:
+//
+//	response, err := ollama.Embed(ctx, "nomic-embed-text", "The quick brown fox")
+//	if err != nil {
+//		log.Fatal(err)
+//	}
+//	fmt.Printf("Generated %d embeddings\n", len(response.Embeddings))
 func Embed(ctx context.Context, model string, input interface{}, options ...func(*EmbedRequest)) (*EmbedResponse, error) {
 	req := &EmbedRequest{
 		Model: model,
@@ -97,17 +169,46 @@ func Embeddings(ctx context.Context, model, prompt string, options ...func(*Embe
 	return defaultClient.Embeddings(ctx, req)
 }
 
-// List lists available models using the default client
+// List lists all available models using the default client.
+// Returns information about each model including name, size, and modification time.
+//
+// Example:
+//
+//	models, err := ollama.List(ctx)
+//	if err != nil {
+//		log.Fatal(err)
+//	}
+//	for _, model := range models.Models {
+//		fmt.Println(model.Name)
+//	}
 func List(ctx context.Context) (*ListResponse, error) {
 	return defaultClient.List(ctx)
 }
 
-// Show returns model information using the default client
+// Show returns detailed information about a specific model using the default client.
+// Includes model parameters, template, and system information.
+//
+// Example:
+//
+//	info, err := ollama.Show(ctx, "gemma3")
+//	if err != nil {
+//		log.Fatal(err)
+//	}
+//	fmt.Printf("Model: %s, Size: %d\n", info.Details.Family, info.Details.ParameterSize)
 func Show(ctx context.Context, model string) (*ShowResponse, error) {
 	return defaultClient.Show(ctx, &ShowRequest{Model: model})
 }
 
-// Pull downloads a model using the default client
+// Pull downloads a model using the default client.
+// Downloads the specified model from the Ollama registry.
+//
+// Example:
+//
+//	err := ollama.Pull(ctx, "gemma3")
+//	if err != nil {
+//		log.Fatal(err)
+//	}
+//	fmt.Println("Model downloaded successfully")
 func Pull(ctx context.Context, model string, options ...func(*PullRequest)) (*StatusResponse, error) {
 	req := &PullRequest{Model: model}
 	
@@ -118,7 +219,29 @@ func Pull(ctx context.Context, model string, options ...func(*PullRequest)) (*St
 	return defaultClient.Pull(ctx, req)
 }
 
-// PullStream downloads a model with progress using the default client
+// PullStream downloads a model with progress updates using the default client.
+// Returns channels for receiving progress updates and errors.
+//
+// Example:
+//
+//	progressChan, errorChan := ollama.PullStream(ctx, "gemma3")
+//	for {
+//		select {
+//		case progress, ok := <-progressChan:
+//			if !ok {
+//				fmt.Println("Download completed!")
+//				return
+//			}
+//			if progress.Total > 0 {
+//				percentage := float64(progress.Completed) / float64(progress.Total) * 100
+//				fmt.Printf("Progress: %.1f%%\n", percentage)
+//			}
+//		case err := <-errorChan:
+//			if err != nil {
+//				log.Fatal(err)
+//			}
+//		}
+//	}
 func PullStream(ctx context.Context, model string, options ...func(*PullRequest)) (<-chan *ProgressResponse, <-chan error) {
 	req := &PullRequest{Model: model}
 	

@@ -9,7 +9,8 @@ import (
 	"time"
 )
 
-// Message represents a chat message
+// Message represents a chat message in the conversation.
+// It contains the role (system, user, assistant), content, and optional multimedia elements.
 type Message struct {
 	Role      string      `json:"role"`
 	Content   string      `json:"content,omitempty"`
@@ -19,7 +20,11 @@ type Message struct {
 	Thinking  string      `json:"thinking,omitempty"`
 }
 
-// Image represents an image input
+// Image represents an image input for multimodal models.
+// The Data field can contain:
+//   - A file path to an image file
+//   - A data URI (data:image/...)
+//   - Base64 encoded image data
 type Image struct {
 	Data string `json:"-"`
 }
@@ -49,31 +54,37 @@ func (i Image) MarshalJSON() ([]byte, error) {
 	return json.Marshal(i.Data)
 }
 
-// ToolCall represents a tool call
+// ToolCall represents a function call made by the model.
+// Used when the model decides to call a tool/function during conversation.
 type ToolCall struct {
 	Function Function `json:"function"`
 }
 
-// Function represents a function call
+// Function represents the actual function call details.
+// Contains the function name and its arguments.
 type Function struct {
 	Name      string                 `json:"name"`
 	Arguments map[string]interface{} `json:"arguments"`
 }
 
-// Tool represents a tool definition
+// Tool represents a tool/function definition that can be used by the model.
+// Tools allow the model to call external functions and get results.
 type Tool struct {
 	Type     string       `json:"type,omitempty"`
 	Function *ToolFunction `json:"function,omitempty"`
 }
 
-// ToolFunction represents a tool function definition
+// ToolFunction represents the detailed specification of a tool function.
+// Includes name, description, and parameter schema for the function.
 type ToolFunction struct {
 	Name        string                 `json:"name,omitempty"`
 	Description string                 `json:"description,omitempty"`
 	Parameters  map[string]interface{} `json:"parameters,omitempty"`
 }
 
-// Options contains model configuration options
+// Options contains model configuration and inference parameters.
+// These options control model behavior, performance, and resource usage.
+// All fields use pointers to allow distinguishing between zero values and unset values.
 type Options struct {
 	// Load time options
 	Numa           *bool `json:"numa,omitempty"`

@@ -18,17 +18,33 @@ const (
 	requestTimeout = 120 * time.Second  // Increased for large models
 )
 
-// Client represents the Ollama API client
+// Client represents the Ollama API client.
+// It handles HTTP communication with the Ollama server and manages
+// authentication headers, base URL, and HTTP client configuration.
 type Client struct {
 	httpClient *http.Client
 	baseURL    *url.URL
 	headers    map[string]string
 }
 
-// ClientOption defines a function type for configuring the client
+// ClientOption defines a function type for configuring the client.
+// Options are applied during client creation to customize behavior.
 type ClientOption func(*Client)
 
-// NewClient creates a new Ollama client with optional configuration
+// NewClient creates a new Ollama client with optional configuration.
+// It reads the OLLAMA_HOST environment variable or uses localhost:11434 as default.
+//
+// Example:
+//
+//	client, err := ollama.NewClient(
+//		ollama.WithHost("http://localhost:11434"),
+//		ollama.WithHeaders(map[string]string{
+//			"Authorization": "Bearer token",
+//		}),
+//	)
+//	if err != nil {
+//		log.Fatal(err)
+//	}
 func NewClient(options ...ClientOption) (*Client, error) {
 	host := os.Getenv("OLLAMA_HOST")
 	if host == "" {
