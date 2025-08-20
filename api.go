@@ -25,6 +25,15 @@ func (c *Client) Generate(ctx context.Context, req *GenerateRequest) (*GenerateR
 		return nil, fmt.Errorf("failed to parse generate response: %w", err)
 	}
 
+	// Process <think> tags in response if present
+	if cleanResponse, thinking := extractThinkingContent(result.Response); thinking != "" {
+		result.Response = cleanResponse
+		// Only set thinking if it wasn't already set by the server
+		if result.Thinking == "" {
+			result.Thinking = thinking
+		}
+	}
+
 	return &result, nil
 }
 
@@ -58,6 +67,16 @@ func (c *Client) GenerateStream(ctx context.Context, req *GenerateRequest) (<-ch
 					errorChan <- fmt.Errorf("failed to parse streaming response: %w", err)
 					return
 				}
+				
+				// Process <think> tags in streaming response if present
+				if cleanResponse, thinking := extractThinkingContent(genResp.Response); thinking != "" {
+					genResp.Response = cleanResponse
+					// Only set thinking if it wasn't already set by the server
+					if genResp.Thinking == "" {
+						genResp.Thinking = thinking
+					}
+				}
+				
 				responseChan <- &genResp
 				if genResp.Done {
 					return
@@ -93,6 +112,15 @@ func (c *Client) Chat(ctx context.Context, req *ChatRequest) (*ChatResponse, err
 		return nil, fmt.Errorf("failed to parse chat response: %w", err)
 	}
 
+	// Process <think> tags in message content if present
+	if cleanContent, thinking := extractThinkingContent(result.Message.Content); thinking != "" {
+		result.Message.Content = cleanContent
+		// Only set thinking if it wasn't already set by the server
+		if result.Message.Thinking == "" {
+			result.Message.Thinking = thinking
+		}
+	}
+
 	return &result, nil
 }
 
@@ -126,6 +154,16 @@ func (c *Client) ChatStream(ctx context.Context, req *ChatRequest) (<-chan *Chat
 					errorChan <- fmt.Errorf("failed to parse streaming response: %w", err)
 					return
 				}
+				
+				// Process <think> tags in streaming message content if present
+				if cleanContent, thinking := extractThinkingContent(chatResp.Message.Content); thinking != "" {
+					chatResp.Message.Content = cleanContent
+					// Only set thinking if it wasn't already set by the server
+					if chatResp.Message.Thinking == "" {
+						chatResp.Message.Thinking = thinking
+					}
+				}
+				
 				responseChan <- &chatResp
 				if chatResp.Done {
 					return

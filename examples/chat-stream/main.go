@@ -14,7 +14,7 @@ func main() {
 	messages := []ollama.Message{
 		{
 			Role:    "user",
-			Content: "Tell me about Go programming language",
+			Content: "翻译为英语：我们后面是不是也需要为GUI的VSAN mode做设计？页面的差别挺大的，HCI的只有一个页面和GUI不一样，应该比较简单。",
 		},
 	}
 

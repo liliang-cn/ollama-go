@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -347,4 +348,34 @@ type ResponseError struct {
 
 func (e *ResponseError) Error() string {
 	return fmt.Sprintf("ollama: request failed with status %d: %s", e.StatusCode, e.Message)
+}
+
+// extractThinkingContent extracts content from <think></think> tags and returns
+// the cleaned content and extracted thinking content.
+// This is used to handle models like qwen3 that embed thinking in response text.
+func extractThinkingContent(content string) (cleanContent, thinking string) {
+	// Find all <think>...</think> blocks ((?s) makes . match newlines)
+	re := regexp.MustCompile(`(?s)<think>\s*(.*?)\s*</think>`)
+	matches := re.FindAllStringSubmatch(content, -1)
+	
+	if len(matches) == 0 {
+		return content, ""
+	}
+	
+	// Extract thinking content from all matches
+	var thinkingParts []string
+	for _, match := range matches {
+		if len(match) > 1 {
+			thinkingParts = append(thinkingParts, strings.TrimSpace(match[1]))
+		}
+	}
+	
+	// Remove all <think>...</think> blocks from content
+	cleanContent = re.ReplaceAllString(content, "")
+	
+	// Clean up extra whitespace
+	cleanContent = strings.TrimSpace(cleanContent)
+	thinking = strings.TrimSpace(strings.Join(thinkingParts, "\n\n"))
+	
+	return cleanContent, thinking
 }

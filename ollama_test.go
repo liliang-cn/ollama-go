@@ -345,3 +345,61 @@ func TestDurationMarshalJSON(t *testing.T) {
 	// Duration type test - skip if not available
 	t.Skip("Duration type test skipped - implementation details")
 }
+
+func TestExtractThinkingContent(t *testing.T) {
+	tests := []struct {
+		name            string
+		input           string
+		expectedClean   string
+		expectedThinking string
+	}{
+		{
+			name:            "no thinking tags",
+			input:           "This is a normal response without thinking.",
+			expectedClean:   "This is a normal response without thinking.",
+			expectedThinking: "",
+		},
+		{
+			name:            "single thinking block",
+			input:           "<think>This is thinking content</think>This is the response.",
+			expectedClean:   "This is the response.",
+			expectedThinking: "This is thinking content",
+		},
+		{
+			name:            "multiline thinking",
+			input:           "<think>\nThis is multiline\nthinking content\n</think>\nThis is the response.",
+			expectedClean:   "This is the response.",
+			expectedThinking: "This is multiline\nthinking content",
+		},
+		{
+			name:            "multiple thinking blocks",
+			input:           "<think>First thought</think>Response part 1<think>Second thought</think>Response part 2",
+			expectedClean:   "Response part 1Response part 2",
+			expectedThinking: "First thought\n\nSecond thought",
+		},
+		{
+			name:            "thinking with extra whitespace",
+			input:           "<think>  \n  Thinking with spaces  \n  </think>  Clean response  ",
+			expectedClean:   "Clean response",
+			expectedThinking: "Thinking with spaces",
+		},
+		{
+			name:            "thinking only",
+			input:           "<think>Only thinking content</think>",
+			expectedClean:   "",
+			expectedThinking: "Only thinking content",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			clean, thinking := extractThinkingContent(tt.input)
+			if clean != tt.expectedClean {
+				t.Errorf("extractThinkingContent() clean content = %q, want %q", clean, tt.expectedClean)
+			}
+			if thinking != tt.expectedThinking {
+				t.Errorf("extractThinkingContent() thinking content = %q, want %q", thinking, tt.expectedThinking)
+			}
+		})
+	}
+}
