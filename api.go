@@ -14,7 +14,7 @@ func (c *Client) Generate(ctx context.Context, req *GenerateRequest) (*GenerateR
 	// Ensure stream is set to false for non-streaming requests
 	generateReq := *req
 	generateReq.Stream = BoolPtr(false)
-	
+
 	resp, err := c.doRequest(ctx, "POST", "/api/generate", &generateReq)
 	if err != nil {
 		return nil, err
@@ -67,7 +67,7 @@ func (c *Client) GenerateStream(ctx context.Context, req *GenerateRequest) (<-ch
 					errorChan <- fmt.Errorf("failed to parse streaming response: %w", err)
 					return
 				}
-				
+
 				// Process <think> tags in streaming response if present
 				if cleanResponse, thinking := extractThinkingContent(genResp.Response); thinking != "" {
 					genResp.Response = cleanResponse
@@ -76,7 +76,7 @@ func (c *Client) GenerateStream(ctx context.Context, req *GenerateRequest) (<-ch
 						genResp.Thinking = thinking
 					}
 				}
-				
+
 				responseChan <- &genResp
 				if genResp.Done {
 					return
@@ -101,7 +101,7 @@ func (c *Client) Chat(ctx context.Context, req *ChatRequest) (*ChatResponse, err
 	// Ensure stream is set to false for non-streaming requests
 	chatReq := *req
 	chatReq.Stream = BoolPtr(false)
-	
+
 	resp, err := c.doRequest(ctx, "POST", "/api/chat", &chatReq)
 	if err != nil {
 		return nil, err
@@ -154,7 +154,7 @@ func (c *Client) ChatStream(ctx context.Context, req *ChatRequest) (<-chan *Chat
 					errorChan <- fmt.Errorf("failed to parse streaming response: %w", err)
 					return
 				}
-				
+
 				// Process <think> tags in streaming message content if present
 				if cleanContent, thinking := extractThinkingContent(chatResp.Message.Content); thinking != "" {
 					chatResp.Message.Content = cleanContent
@@ -163,7 +163,7 @@ func (c *Client) ChatStream(ctx context.Context, req *ChatRequest) (<-chan *Chat
 						chatResp.Message.Thinking = thinking
 					}
 				}
-				
+
 				responseChan <- &chatResp
 				if chatResp.Done {
 					return

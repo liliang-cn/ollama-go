@@ -35,7 +35,7 @@ func main() {
 			Name:        "get_weather",
 			Description: "Get the current temperature for a city",
 			Parameters: map[string]interface{}{
-				"type": "object",
+				"type":     "object",
 				"required": []string{"city"},
 				"properties": map[string]interface{}{
 					"city": map[string]interface{}{
@@ -53,7 +53,7 @@ func main() {
 			Name:        "get_weather_conditions",
 			Description: "Get the weather conditions for a city",
 			Parameters: map[string]interface{}{
-				"type": "object",
+				"type":     "object",
 				"required": []string{"city"},
 				"properties": map[string]interface{}{
 					"city": map[string]interface{}{
@@ -76,7 +76,7 @@ func main() {
 	final := true
 	for {
 		// Use streaming API
-		responsesCh, errorsCh := ollama.ChatStream(ctx, model, messages, 
+		responsesCh, errorsCh := ollama.ChatStream(ctx, model, messages,
 			ollama.WithTools([]ollama.Tool{weatherTool, conditionsTool}))
 
 		var lastResponse *ollama.ChatResponse

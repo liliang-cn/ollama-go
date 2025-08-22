@@ -57,7 +57,7 @@ func TestGenerate(t *testing.T) {
 	defer server.Close()
 
 	client, _ := NewClient(WithHost(server.URL))
-	
+
 	req := &GenerateRequest{
 		Model:  "test-model",
 		Prompt: "Test prompt",
@@ -96,7 +96,7 @@ func TestChat(t *testing.T) {
 	defer server.Close()
 
 	client, _ := NewClient(WithHost(server.URL))
-	
+
 	req := &ChatRequest{
 		Model: "test-model",
 		Messages: []Message{
@@ -135,7 +135,7 @@ func TestList(t *testing.T) {
 	defer server.Close()
 
 	client, _ := NewClient(WithHost(server.URL))
-	
+
 	resp, err := client.List(context.Background())
 	if err != nil {
 		t.Fatalf("List failed: %v", err)
@@ -171,7 +171,7 @@ func TestEmbed(t *testing.T) {
 	defer server.Close()
 
 	client, _ := NewClient(WithHost(server.URL))
-	
+
 	req := &EmbedRequest{
 		Model: "test-embed-model",
 		Input: "Test input text",
@@ -200,7 +200,7 @@ func TestResponseError(t *testing.T) {
 	defer server.Close()
 
 	client, _ := NewClient(WithHost(server.URL))
-	
+
 	req := &GenerateRequest{
 		Model:  "test-model",
 		Prompt: "Test prompt",
@@ -260,7 +260,7 @@ func TestGenerateStream(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		
+
 		// Send a single response with Done=true for more predictable testing
 		response := GenerateResponse{
 			Model:    "test-model",
@@ -272,7 +272,7 @@ func TestGenerateStream(t *testing.T) {
 	defer server.Close()
 
 	client, _ := NewClient(WithHost(server.URL))
-	
+
 	req := &GenerateRequest{
 		Model:  "test-model",
 		Prompt: "Test prompt",
@@ -298,7 +298,7 @@ func TestGenerateStream(t *testing.T) {
 			t.Fatal("Timeout waiting for stream responses")
 		}
 	}
-	done:
+done:
 
 	// Check that we got at least one response
 	if len(responses) == 0 {
@@ -322,19 +322,19 @@ func TestChatStream(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		
+
 		// Send a single response with Done=true for more predictable testing
 		response := ChatResponse{
-			Model: "test-model",
+			Model:   "test-model",
 			Message: Message{Role: "assistant", Content: "Hi there!"},
-			Done:  true,
+			Done:    true,
 		}
 		_ = json.NewEncoder(w).Encode(response)
 	}))
 	defer server.Close()
 
 	client, _ := NewClient(WithHost(server.URL))
-	
+
 	req := &ChatRequest{
 		Model: "test-model",
 		Messages: []Message{
@@ -361,7 +361,7 @@ func TestChatStream(t *testing.T) {
 			t.Fatal("Timeout waiting for chat stream responses")
 		}
 	}
-	done:
+done:
 
 	// Check that we got at least one response
 	if len(responses) == 0 {
@@ -388,9 +388,9 @@ func TestShow(t *testing.T) {
 			Parameters: "temperature 0.8",
 			Template:   "{{ .Prompt }}",
 			Details: &ModelDetails{
-				Format:         "gguf",
-				Family:         "llama",
-				ParameterSize:  "7B",
+				Format:            "gguf",
+				Family:            "llama",
+				ParameterSize:     "7B",
 				QuantizationLevel: "Q4_0",
 			},
 		}
@@ -399,7 +399,7 @@ func TestShow(t *testing.T) {
 	defer server.Close()
 
 	client, _ := NewClient(WithHost(server.URL))
-	
+
 	req := &ShowRequest{
 		Model: "test-model",
 	}
@@ -431,7 +431,7 @@ func TestPull(t *testing.T) {
 	defer server.Close()
 
 	client, _ := NewClient(WithHost(server.URL))
-	
+
 	req := &PullRequest{
 		Model: "test-model",
 	}
@@ -460,7 +460,7 @@ func TestDelete(t *testing.T) {
 	defer server.Close()
 
 	client, _ := NewClient(WithHost(server.URL))
-	
+
 	req := &DeleteRequest{
 		Model: "test-model",
 	}
@@ -489,7 +489,7 @@ func TestCopy(t *testing.T) {
 	defer server.Close()
 
 	client, _ := NewClient(WithHost(server.URL))
-	
+
 	req := &CopyRequest{
 		Source:      "source-model",
 		Destination: "dest-model",
@@ -588,7 +588,7 @@ func TestEmbeddings(t *testing.T) {
 	client, _ := NewClient(WithHost(server.URL))
 
 	resp, err := client.Embeddings(context.Background(), &EmbeddingsRequest{
-		Model: "test-embed-model",
+		Model:  "test-embed-model",
 		Prompt: "text1",
 	})
 	if err != nil {
@@ -646,7 +646,7 @@ func TestErrorHandling(t *testing.T) {
 
 	// Test network error
 	client, _ := NewClient(WithHost("http://non-existent-host:12345"))
-	
+
 	req := &GenerateRequest{
 		Model:  "test-model",
 		Prompt: "Test prompt",
@@ -667,7 +667,7 @@ func TestRequestCancellation(t *testing.T) {
 	defer server.Close()
 
 	client, _ := NewClient(WithHost(server.URL))
-	
+
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	defer cancel()
 
@@ -695,7 +695,7 @@ func TestJSONErrorResponse(t *testing.T) {
 	defer server.Close()
 
 	client, _ := NewClient(WithHost(server.URL))
-	
+
 	req := &GenerateRequest{
 		Model:  "invalid-model",
 		Prompt: "Test prompt",
@@ -726,7 +726,7 @@ func TestNonJSONErrorResponse(t *testing.T) {
 	defer server.Close()
 
 	client, _ := NewClient(WithHost(server.URL))
-	
+
 	req := &GenerateRequest{
 		Model:  "test-model",
 		Prompt: "Test prompt",

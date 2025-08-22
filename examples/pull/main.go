@@ -13,7 +13,7 @@ func main() {
 
 	// Pull a model with progress tracking using streaming
 	fmt.Println("Pulling gemma3 model...")
-	
+
 	responseChan, errorChan := ollama.PullStream(ctx, "gemma3")
 
 	var currentDigest string
@@ -69,10 +69,10 @@ func main() {
 
 // Simple progress bar implementation
 type progressBar struct {
-	total     int64
-	current   int64
-	desc      string
-	finished  bool
+	total    int64
+	current  int64
+	desc     string
+	finished bool
 }
 
 func newProgressBar(total int64, desc string) *progressBar {
@@ -86,15 +86,15 @@ func (pb *progressBar) Update(current int64) {
 	if pb.finished {
 		return
 	}
-	
+
 	pb.current = current
 	percent := float64(current) / float64(pb.total) * 100
-	
+
 	// Simple text-based progress indicator
-	fmt.Printf("\r%s: %.1f%% (%s/%s)", 
-		pb.desc, 
-		percent, 
-		formatBytes(current), 
+	fmt.Printf("\r%s: %.1f%% (%s/%s)",
+		pb.desc,
+		percent,
+		formatBytes(current),
 		formatBytes(pb.total))
 }
 
@@ -102,11 +102,11 @@ func (pb *progressBar) Finish() {
 	if pb.finished {
 		return
 	}
-	
+
 	pb.finished = true
-	fmt.Printf("\r%s: 100%% (%s/%s) ✓\n", 
-		pb.desc, 
-		formatBytes(pb.total), 
+	fmt.Printf("\r%s: 100%% (%s/%s) ✓\n",
+		pb.desc,
+		formatBytes(pb.total),
 		formatBytes(pb.total))
 }
 

@@ -15,13 +15,13 @@ func main() {
 	}
 
 	ctx := context.Background()
-	
+
 	// Show model information with verbose output
 	showReq := &ollama.ShowRequest{
 		Model:   "llama3.2:1b",
 		Verbose: ollama.BoolPtr(true), // Request verbose output
 	}
-	
+
 	modelInfo, err := client.Show(ctx, showReq)
 	if err != nil {
 		log.Fatal("Failed to show model:", err)

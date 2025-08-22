@@ -56,7 +56,7 @@ func main() {
 		}
 
 		// Add the response to the messages to maintain the history
-		messages = append(messages, 
+		messages = append(messages,
 			ollama.Message{Role: "user", Content: userInput},
 			ollama.Message{Role: "assistant", Content: response.Message.Content},
 		)

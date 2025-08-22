@@ -23,8 +23,8 @@ type ImageDescription struct {
 	Objects     []Object `json:"objects"`
 	Scene       string   `json:"scene"`
 	Colors      []string `json:"colors"`
-	TimeOfDay   string   `json:"time_of_day"`   // Morning, Afternoon, Evening, Night
-	Setting     string   `json:"setting"`       // Indoor, Outdoor, Unknown
+	TimeOfDay   string   `json:"time_of_day"` // Morning, Afternoon, Evening, Night
+	Setting     string   `json:"setting"`     // Indoor, Outdoor, Unknown
 	TextContent *string  `json:"text_content"`
 }
 

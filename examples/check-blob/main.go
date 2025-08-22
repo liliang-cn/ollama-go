@@ -15,10 +15,10 @@ func main() {
 	}
 
 	ctx := context.Background()
-	
+
 	// Example digest (you would get this from CreateBlob)
 	digest := "sha256:29fdb92e57cf0827ded04ae6461b5931d01fa595843f55d36f5b275a52087dd2"
-	
+
 	// Check if blob exists
 	exists, err := client.CheckBlob(ctx, digest)
 	if err != nil {

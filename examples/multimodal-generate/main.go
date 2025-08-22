@@ -29,7 +29,7 @@ func main() {
 			log.Fatal("Failed to get latest comic info:", err)
 		}
 		defer resp.Body.Close()
-		
+
 		// For simplicity, use a random number between 1-2000
 		num = 1 + (int(resp.Header.Get("Content-Length")[0]) % 2000)
 	}

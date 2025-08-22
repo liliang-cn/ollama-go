@@ -78,7 +78,7 @@ func main() {
 	}
 
 	// Make initial chat request with tools
-	response, err := ollama.Chat(ctx, "llama3.1", messages, func(req *ollama.ChatRequest) {
+	response, err := ollama.Chat(ctx, "qwen3", messages, func(req *ollama.ChatRequest) {
 		req.Tools = []ollama.Tool{*addTool, *subtractTool}
 	})
 	if err != nil {
@@ -86,7 +86,7 @@ func main() {
 	}
 
 	var output int
-	
+
 	if len(response.Message.ToolCalls) > 0 {
 		// Process tool calls (may be multiple)
 		for _, toolCall := range response.Message.ToolCalls {
@@ -94,12 +94,12 @@ func main() {
 			if function, exists := availableFunctions[toolCall.Function.Name]; exists {
 				fmt.Printf("Calling function: %s\n", toolCall.Function.Name)
 				fmt.Printf("Arguments: %v\n", toolCall.Function.Arguments)
-				
+
 				// Extract arguments and call function
 				a := int(toolCall.Function.Arguments["a"].(float64))
 				b := int(toolCall.Function.Arguments["b"].(float64))
 				output = function(a, b)
-				
+
 				fmt.Printf("Function output: %d\n", output)
 			} else {
 				fmt.Printf("Function %s not found\n", toolCall.Function.Name)
@@ -115,7 +115,7 @@ func main() {
 		})
 
 		// Get final response with tool results
-		finalResponse, err := ollama.Chat(ctx, "llama3.1", messages)
+		finalResponse, err := ollama.Chat(ctx, "qwen3", messages)
 		if err != nil {
 			log.Fatal(err)
 		}

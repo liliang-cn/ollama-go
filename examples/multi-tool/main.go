@@ -44,7 +44,7 @@ func main() {
 			Name:        "get_temperature",
 			Description: "Get the temperature for a city in Celsius",
 			Parameters: map[string]interface{}{
-				"type": "object",
+				"type":     "object",
 				"required": []string{"city"},
 				"properties": map[string]interface{}{
 					"city": map[string]interface{}{
@@ -62,7 +62,7 @@ func main() {
 			Name:        "get_conditions",
 			Description: "Get the weather conditions for a city",
 			Parameters: map[string]interface{}{
-				"type": "object",
+				"type":     "object",
 				"required": []string{"city"},
 				"properties": map[string]interface{}{
 					"city": map[string]interface{}{
@@ -81,7 +81,7 @@ func main() {
 	messages := []ollama.Message{
 		{Role: "user", Content: fmt.Sprintf("What is the temperature in %s? and what are the weather conditions in %s?", city1, city2)},
 	}
-	
+
 	fmt.Printf("----- Prompt: %s\n\n", messages[0].Content)
 
 	// Make initial chat request with streaming and thinking
@@ -140,7 +140,7 @@ func main() {
 	}
 
 processToolCalls:
-	fmt.Println("----- Sending result back to model\n")
+	fmt.Println("----- Sending result back to model")
 
 	// Check if we have tool results to send back
 	hasToolResults := false

@@ -27,21 +27,21 @@ func main() {
 		if model.Size > 0 {
 			sizeStr = formatBytes(model.Size)
 		}
-		
+
 		vramStr := "N/A"
 		if model.SizeVRAM > 0 {
 			vramStr = formatBytes(model.SizeVRAM)
 		}
-		
+
 		expiresStr := "N/A"
 		if model.ExpiresAt != nil {
 			expiresStr = model.ExpiresAt.Format("15:04:05")
 		}
 
-		fmt.Printf("%-20s %-10s %-10s %-20s\n", 
-			model.Name, 
-			sizeStr, 
-			vramStr, 
+		fmt.Printf("%-20s %-10s %-10s %-20s\n",
+			model.Name,
+			sizeStr,
+			vramStr,
 			expiresStr)
 	}
 

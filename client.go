@@ -15,7 +15,7 @@ import (
 const (
 	defaultHost    = "http://localhost:11434"
 	userAgent      = "ollama-go/1.0.0 (liliang-cn)"
-	requestTimeout = 120 * time.Second  // Increased for large models
+	requestTimeout = 120 * time.Second // Increased for large models
 )
 
 // Client represents the Ollama API client.
@@ -128,7 +128,7 @@ func (c *Client) doRequest(ctx context.Context, method, endpoint string, body in
 	if resp.StatusCode >= 400 {
 		defer resp.Body.Close()
 		bodyBytes, _ := io.ReadAll(resp.Body)
-		
+
 		// Try to parse as JSON error first, like Python version
 		var errorResp map[string]interface{}
 		errorMsg := string(bodyBytes)
@@ -137,7 +137,7 @@ func (c *Client) doRequest(ctx context.Context, method, endpoint string, body in
 				errorMsg = errStr
 			}
 		}
-		
+
 		return nil, &ResponseError{
 			StatusCode: resp.StatusCode,
 			Message:    errorMsg,
@@ -170,7 +170,7 @@ func (c *Client) doRequestWithBody(ctx context.Context, method, endpoint string,
 	if resp.StatusCode >= 400 {
 		defer resp.Body.Close()
 		bodyBytes, _ := io.ReadAll(resp.Body)
-		
+
 		// Try to parse as JSON error first, like Python version
 		var errorResp map[string]interface{}
 		errorMsg := string(bodyBytes)
@@ -179,7 +179,7 @@ func (c *Client) doRequestWithBody(ctx context.Context, method, endpoint string,
 				errorMsg = errStr
 			}
 		}
-		
+
 		return nil, &ResponseError{
 			StatusCode: resp.StatusCode,
 			Message:    errorMsg,

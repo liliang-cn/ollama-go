@@ -57,7 +57,7 @@ func main() {
 	}
 
 	// Make request with structured output
-	response, err := ollama.Chat(ctx, "llama3.1:8b", messages, func(req *ollama.ChatRequest) {
+	response, err := ollama.Chat(ctx, "qwen3", messages, func(req *ollama.ChatRequest) {
 		req.Format = schema
 		req.Options = &ollama.Options{
 			Temperature: ollama.Float64Ptr(0), // Make responses more deterministic

@@ -14,7 +14,7 @@ func main() {
 
 	// Test with streaming to see if we can get more detailed info
 	fmt.Println("Testing streaming generation...")
-	
+
 	responseChan, errorChan := ollama.GenerateStream(ctx, "gpt-oss:20b", "Hello! Please say hi back.")
 
 	timeout := time.After(10 * time.Second)
@@ -32,7 +32,7 @@ func main() {
 			responseCount++
 			fmt.Printf("Response %d: Done=%t, Content='%s'\n", responseCount, response.Done, response.Response)
 			fullResponse += response.Response
-			
+
 			if response.Done {
 				fmt.Printf("\nGeneration complete! Full response: '%s'\n", fullResponse)
 				return

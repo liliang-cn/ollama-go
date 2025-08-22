@@ -61,7 +61,7 @@ func main() {
 	// Test 4: Streaming (limited)
 	fmt.Println("\n✅ Test 4: Streaming generation...")
 	responseChan, errorChan := ollama.GenerateStream(ctx, modelName, "Count from 1 to 3.")
-	
+
 	timeout := time.After(15 * time.Second)
 	var streamingContent string
 	responseCount := 0
@@ -88,7 +88,7 @@ streamingLoop:
 			break streamingLoop
 		}
 	}
-	
+
 	fmt.Printf("Streaming result (%d chunks): %s\n", responseCount, streamingContent)
 
 	// Test 5: Model info
@@ -97,8 +97,8 @@ streamingLoop:
 	if err != nil {
 		log.Printf("⚠️ Show test warning: %v", err)
 	} else {
-		fmt.Printf("Model details: Family=%s, Size=%s\n", 
-			getStringValue(info.Details, "family"), 
+		fmt.Printf("Model details: Family=%s, Size=%s\n",
+			getStringValue(info.Details, "family"),
 			getStringValue(info.Details, "parameter_size"))
 	}
 

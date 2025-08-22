@@ -18,8 +18,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println("Thinking:\n========\n")
+	fmt.Println("Thinking:")
+	fmt.Println("========")
+	fmt.Println()
 	fmt.Println(response.Thinking)
-	fmt.Println("\nResponse:\n========\n")
+	fmt.Println()
+	fmt.Println("Response:")
+	fmt.Println("========")
+	fmt.Println()
 	fmt.Println(response.Response)
 }

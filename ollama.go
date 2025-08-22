@@ -28,11 +28,11 @@ func Generate(ctx context.Context, model, prompt string, options ...func(*Genera
 		Model:  model,
 		Prompt: prompt,
 	}
-	
+
 	for _, opt := range options {
 		opt(req)
 	}
-	
+
 	return defaultClient.Generate(ctx, req)
 }
 
@@ -61,11 +61,11 @@ func GenerateStream(ctx context.Context, model, prompt string, options ...func(*
 		Model:  model,
 		Prompt: prompt,
 	}
-	
+
 	for _, opt := range options {
 		opt(req)
 	}
-	
+
 	return defaultClient.GenerateStream(ctx, req)
 }
 
@@ -87,11 +87,11 @@ func Chat(ctx context.Context, model string, messages []Message, options ...func
 		Model:    model,
 		Messages: messages,
 	}
-	
+
 	for _, opt := range options {
 		opt(req)
 	}
-	
+
 	return defaultClient.Chat(ctx, req)
 }
 
@@ -122,11 +122,11 @@ func ChatStream(ctx context.Context, model string, messages []Message, options .
 		Model:    model,
 		Messages: messages,
 	}
-	
+
 	for _, opt := range options {
 		opt(req)
 	}
-	
+
 	return defaultClient.ChatStream(ctx, req)
 }
 
@@ -147,11 +147,11 @@ func Embed(ctx context.Context, model string, input interface{}, options ...func
 		Model: model,
 		Input: input,
 	}
-	
+
 	for _, opt := range options {
 		opt(req)
 	}
-	
+
 	return defaultClient.Embed(ctx, req)
 }
 
@@ -161,11 +161,11 @@ func Embeddings(ctx context.Context, model, prompt string, options ...func(*Embe
 		Model:  model,
 		Prompt: prompt,
 	}
-	
+
 	for _, opt := range options {
 		opt(req)
 	}
-	
+
 	return defaultClient.Embeddings(ctx, req)
 }
 
@@ -211,11 +211,11 @@ func Show(ctx context.Context, model string) (*ShowResponse, error) {
 //	fmt.Println("Model downloaded successfully")
 func Pull(ctx context.Context, model string, options ...func(*PullRequest)) (*StatusResponse, error) {
 	req := &PullRequest{Model: model}
-	
+
 	for _, opt := range options {
 		opt(req)
 	}
-	
+
 	return defaultClient.Pull(ctx, req)
 }
 
@@ -244,33 +244,33 @@ func Pull(ctx context.Context, model string, options ...func(*PullRequest)) (*St
 //	}
 func PullStream(ctx context.Context, model string, options ...func(*PullRequest)) (<-chan *ProgressResponse, <-chan error) {
 	req := &PullRequest{Model: model}
-	
+
 	for _, opt := range options {
 		opt(req)
 	}
-	
+
 	return defaultClient.PullStream(ctx, req)
 }
 
 // Push uploads a model using the default client
 func Push(ctx context.Context, model string, options ...func(*PushRequest)) (*StatusResponse, error) {
 	req := &PushRequest{Model: model}
-	
+
 	for _, opt := range options {
 		opt(req)
 	}
-	
+
 	return defaultClient.Push(ctx, req)
 }
 
 // PushStream uploads a model with progress using the default client
 func PushStream(ctx context.Context, model string, options ...func(*PushRequest)) (<-chan *ProgressResponse, <-chan error) {
 	req := &PushRequest{Model: model}
-	
+
 	for _, opt := range options {
 		opt(req)
 	}
-	
+
 	return defaultClient.PushStream(ctx, req)
 }
 
@@ -280,11 +280,11 @@ func Create(ctx context.Context, model, modelfile string, options ...func(*Creat
 		Model:     model,
 		Modelfile: modelfile,
 	}
-	
+
 	for _, opt := range options {
 		opt(req)
 	}
-	
+
 	return defaultClient.Create(ctx, req)
 }
 
@@ -294,11 +294,11 @@ func CreateStream(ctx context.Context, model, modelfile string, options ...func(
 		Model:     model,
 		Modelfile: modelfile,
 	}
-	
+
 	for _, opt := range options {
 		opt(req)
 	}
-	
+
 	return defaultClient.CreateStream(ctx, req)
 }
 

@@ -22,7 +22,7 @@ func main() {
 	fmt.Printf("Template:      %s\n", response.Template)
 	fmt.Printf("Modelfile:     %s\n", response.Modelfile)
 	fmt.Printf("License:       %s\n", response.License)
-	
+
 	if response.Details != nil {
 		fmt.Printf("Details:\n")
 		fmt.Printf("  Format:      %s\n", response.Details.Format)
@@ -30,14 +30,14 @@ func main() {
 		fmt.Printf("  Parameter Size: %s\n", response.Details.ParameterSize)
 		fmt.Printf("  Quantization Level: %s\n", response.Details.QuantizationLevel)
 	}
-	
+
 	if response.ModelInfo != nil {
 		fmt.Printf("Model Info:\n")
 		for key, value := range response.ModelInfo {
 			fmt.Printf("  %s: %v\n", key, value)
 		}
 	}
-	
+
 	if response.Parameters != "" {
 		fmt.Printf("Parameters: %s\n", response.Parameters)
 	}

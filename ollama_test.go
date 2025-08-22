@@ -308,13 +308,13 @@ func TestPullConfigurationMethods(t *testing.T) {
 
 func TestMultipleConfigurationMethods(t *testing.T) {
 	req := &GenerateRequest{}
-	
+
 	// Apply multiple configuration functions
 	WithSystem("test system")(req)
 	WithFormat("json")(req)
 	WithKeepAlive("10m")(req)
 	WithRaw()(req)
-	
+
 	if req.System != "test system" {
 		t.Errorf("Expected system 'test system', got '%s'", req.System)
 	}
@@ -334,7 +334,7 @@ func TestTypesErrorMethod(t *testing.T) {
 		StatusCode: 404,
 		Message:    "Model not found",
 	}
-	
+
 	expected := "ollama: request failed with status 404: Model not found"
 	if respErr.Error() != expected {
 		t.Errorf("Expected error '%s', got '%s'", expected, respErr.Error())
@@ -348,45 +348,45 @@ func TestDurationMarshalJSON(t *testing.T) {
 
 func TestExtractThinkingContent(t *testing.T) {
 	tests := []struct {
-		name            string
-		input           string
-		expectedClean   string
+		name             string
+		input            string
+		expectedClean    string
 		expectedThinking string
 	}{
 		{
-			name:            "no thinking tags",
-			input:           "This is a normal response without thinking.",
-			expectedClean:   "This is a normal response without thinking.",
+			name:             "no thinking tags",
+			input:            "This is a normal response without thinking.",
+			expectedClean:    "This is a normal response without thinking.",
 			expectedThinking: "",
 		},
 		{
-			name:            "single thinking block",
-			input:           "<think>This is thinking content</think>This is the response.",
-			expectedClean:   "This is the response.",
+			name:             "single thinking block",
+			input:            "<think>This is thinking content</think>This is the response.",
+			expectedClean:    "This is the response.",
 			expectedThinking: "This is thinking content",
 		},
 		{
-			name:            "multiline thinking",
-			input:           "<think>\nThis is multiline\nthinking content\n</think>\nThis is the response.",
-			expectedClean:   "This is the response.",
+			name:             "multiline thinking",
+			input:            "<think>\nThis is multiline\nthinking content\n</think>\nThis is the response.",
+			expectedClean:    "This is the response.",
 			expectedThinking: "This is multiline\nthinking content",
 		},
 		{
-			name:            "multiple thinking blocks",
-			input:           "<think>First thought</think>Response part 1<think>Second thought</think>Response part 2",
-			expectedClean:   "Response part 1Response part 2",
+			name:             "multiple thinking blocks",
+			input:            "<think>First thought</think>Response part 1<think>Second thought</think>Response part 2",
+			expectedClean:    "Response part 1Response part 2",
 			expectedThinking: "First thought\n\nSecond thought",
 		},
 		{
-			name:            "thinking with extra whitespace",
-			input:           "<think>  \n  Thinking with spaces  \n  </think>  Clean response  ",
-			expectedClean:   "Clean response",
+			name:             "thinking with extra whitespace",
+			input:            "<think>  \n  Thinking with spaces  \n  </think>  Clean response  ",
+			expectedClean:    "Clean response",
 			expectedThinking: "Thinking with spaces",
 		},
 		{
-			name:            "thinking only",
-			input:           "<think>Only thinking content</think>",
-			expectedClean:   "",
+			name:             "thinking only",
+			input:            "<think>Only thinking content</think>",
+			expectedClean:    "",
 			expectedThinking: "Only thinking content",
 		},
 	}

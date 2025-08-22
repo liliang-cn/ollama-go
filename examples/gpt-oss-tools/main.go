@@ -35,7 +35,7 @@ func main() {
 			Name:        "get_weather",
 			Description: "Get the current temperature for a city",
 			Parameters: map[string]interface{}{
-				"type": "object",
+				"type":     "object",
 				"required": []string{"city"},
 				"properties": map[string]interface{}{
 					"city": map[string]interface{}{
@@ -53,7 +53,7 @@ func main() {
 			Name:        "get_weather_conditions",
 			Description: "Get the weather conditions for a city",
 			Parameters: map[string]interface{}{
-				"type": "object",
+				"type":     "object",
 				"required": []string{"city"},
 				"properties": map[string]interface{}{
 					"city": map[string]interface{}{
@@ -71,7 +71,7 @@ func main() {
 
 	model := "gpt-oss:20b"
 
-	// gpt-oss can call tools while "thinking" 
+	// gpt-oss can call tools while "thinking"
 	// a loop is needed to call the tools and get the results
 	for {
 		response, err := ollama.Chat(ctx, model, messages, ollama.WithTools([]ollama.Tool{weatherTool, conditionsTool}))
@@ -103,7 +103,7 @@ func main() {
 					continue
 				}
 
-				fmt.Printf("Result from tool call name: %s with arguments: %v result: %s\n\n", 
+				fmt.Printf("Result from tool call name: %s with arguments: %v result: %s\n\n",
 					toolCall.Function.Name, toolCall.Function.Arguments, result)
 
 				// Add the assistant message and tool result to the messages
